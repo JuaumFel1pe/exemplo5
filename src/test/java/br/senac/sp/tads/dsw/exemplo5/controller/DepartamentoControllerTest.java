@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import br.senac.sp.tads.dsw.exemplo5.dto.DepartamentoRequestDTO;
 import br.senac.sp.tads.dsw.exemplo5.model.Departamento;
 import br.senac.sp.tads.dsw.exemplo5.repository.DepartamentoRepository;
 import tools.jackson.databind.ObjectMapper;
@@ -38,12 +39,10 @@ public class DepartamentoControllerTest {
     @Test
     void deveCriarDeparmentoComSucesso() throws Exception {
         // 1 - Criar o objeto que queremos enviar
-        Departamento departamento = new Departamento();
-        departamento.setNome("Turma B - TADS");
-        departamento.setOrcamento(3600.00);
+        DepartamentoRequestDTO dto = new DepartamentoRequestDTO("Turma B - TADS", 3600.00);
 
         // 2 - Converter o objeto JAVA para JSON (string)
-        String json = objectMapper.writeValueAsString(departamento);
+        String json = objectMapper.writeValueAsString(dto);
 
         // 3 - Enviar o POST para a API
         mockMvc.perform(
@@ -60,9 +59,12 @@ public class DepartamentoControllerTest {
 
     @Test 
     void deveListarTodosOsDepartamentos() throws Exception{
+        DepartamentoRequestDTO dto = new DepartamentoRequestDTO("Turma B - TADS", 3600.00);
+
         Departamento departamento = new Departamento();
-        departamento.setNome("Turma B - TADS");
-        departamento.setOrcamento(3600.00);
+        departamento.setNome(dto.nome());
+        departamento.setOrcamento(dto.orcamento());
+        
         repository.save(departamento);
 
         mockMvc.perform(get("/api/departamentos"))
@@ -72,9 +74,12 @@ public class DepartamentoControllerTest {
 
     @Test 
     void deveBuscarDepartamentoPorId() throws Exception{
+         DepartamentoRequestDTO dto = new DepartamentoRequestDTO("Turma B - TADS", 3600.00);
+
         Departamento departamento = new Departamento();
-        departamento.setNome("Turma B - TADS");
-        departamento.setOrcamento(3600.00);
+        departamento.setNome(dto.nome());
+        departamento.setOrcamento(dto.orcamento());
+
         repository.save(departamento);
 
         mockMvc.perform(get("/api/departamentos/" + departamento.getId()))
@@ -86,15 +91,19 @@ public class DepartamentoControllerTest {
 
     @Test 
     void deveAtualizarDepartamento() throws Exception{
+        DepartamentoRequestDTO dto = new DepartamentoRequestDTO("Turma B - TADS", 3600.00);
+
         Departamento departamento = new Departamento();
-        departamento.setNome("Turma B - TADS");
-        departamento.setOrcamento(3600.00);
+        departamento.setNome(dto.nome());
+        departamento.setOrcamento(dto.orcamento());
+
         Departamento departamentoSalvo = repository.save(departamento);
 
+        //Cria os novos dados para PUT
         departamentoSalvo.setNome("Turma do Luis");
-
         String json = objectMapper.writeValueAsString(departamentoSalvo);
 
+        //Executa e verifica se atualizou
         mockMvc.perform(
                         put("/api/departamentos/" + departamentoSalvo.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -107,15 +116,20 @@ public class DepartamentoControllerTest {
 
     @Test 
     void deveApagarDepartamento() throws Exception{
-        Departamento departamento = new Departamento();
-        departamento.setNome("Turma B - TADS");
-        departamento.setOrcamento(3600.00);
-        Departamento departamentoSalvo = repository.save(departamento);
+        DepartamentoRequestDTO dto = new DepartamentoRequestDTO("Turma B - TADS", 3600.00);
 
-        mockMvc.perform(delete("/api/departamentos/" + departamentoSalvo.getId()))
+        Departamento departamento = new Departamento();
+        departamento.setNome(dto.nome());
+        departamento.setOrcamento(dto.orcamento());
+
+        departamento = repository.save(departamento);
+
+        //Deleta e espera 204 No Content
+        mockMvc.perform(delete("/api/departamentos/" + departamento.getId()))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/departamentos/" + departamentoSalvo.getId()))
+        //Confirma que apagou tentando buscar(espera 404 Not Found)
+        mockMvc.perform(get("/api/departamentos/" + departamento.getId()))
                 .andExpect(status().isNotFound());
     }
 }
