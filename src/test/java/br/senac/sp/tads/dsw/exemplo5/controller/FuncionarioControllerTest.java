@@ -120,7 +120,7 @@ public class FuncionarioControllerTest {
                 .andExpect(jsonPath("$.id").value(funcionarioSalvo.getId()))
                 .andExpect(jsonPath("$.nome").value(funcionarioSalvo.getNome()))
                 .andExpect(jsonPath("$.trabalhoRemoto").value(funcionarioSalvo.getTrabalhoRemoto()))
-                .andExpect(jsonPath("$.departamento.id").value(funcionarioSalvo.getDepartamento().getId()));
+                .andExpect(jsonPath("$.nomeDepartamento").value(funcionarioSalvo.getDepartamento().getNome()));
     }
 
     @Test
